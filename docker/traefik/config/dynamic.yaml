@@ -7,3 +7,7 @@ http:
       replacePathRegex:
         regex: "^/(.*)"
         replacement: "/"
+    removeReg:
+      replacePathRegex:
+        regex: "^/([^/]*)/(.*)"
+        replacement: "/$2"
