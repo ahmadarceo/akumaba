@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  reverse-proxy:
+    # The official v2 Traefik docker image
+    image: traefik:v2.10
+    # Enables the web UI and tells Traefik to listen to docker
+    command:
+      - "--api.insecure=true"
+    ports:
+      # The HTTP port
+      - "80:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik.yaml:/traefik.yaml
+      - ./config:/config
+
+  phper:
+    image: fet/phper
+    expose:
+      - 80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.phper.rule=PathPrefix(`/check`)"
+      - "traefik.http.routers.phper.middlewares=removeFirst@file"
+      - "traefik.http.services.phper.loadbalancer.passhostheader=true"
+
+  phpar:
+    image: fet/phper
+    expose:
+      - 80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.phpar.rule=PathPrefix(`/ekis`)"
+      - "traefik.http.routers.phpar.middlewares=removeFirst@file"
+      - "traefik.http.services.phpar.loadbalancer.passhostheader=false"
