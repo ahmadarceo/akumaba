@@ -1,1 +1,9 @@
-a
+http:
+  middlewares:
+    # https://github.com/BallAerospace/COSMOS
+    # Removes the first part of the url before passing onto the service
+    # ie. /cosmos-api/api becomes /api
+    removeFirst: #
+      replacePathRegex:
+        regex: "^/(.*)"
+        replacement: "/"
