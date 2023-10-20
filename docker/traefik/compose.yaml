@@ -37,3 +37,14 @@ services:
       - "traefik.http.routers.phpar.rule=PathPrefix(`/ekis`)"
       - "traefik.http.routers.phpar.middlewares=removeFirst@file"
       - "traefik.http.services.phpar.loadbalancer.passhostheader=false"
+
+  registry:
+    image: registry:2
+    expose:
+      - 5000
+    environment:
+      - REGISTRY_VALIDATION_DISABLED=true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.regist.rule=PathPrefix(`/registry`)"
+      - "traefik.http.routers.regist.middlewares=removeReg@file"
