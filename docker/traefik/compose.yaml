@@ -10,16 +10,18 @@ services:
     ports:
       # The HTTP port
       - "80:80"
+      - "81:81"
       # The Web UI (enabled by --api.insecure=true)
       - "8080:8080"
     volumes:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./traefik.yaml:/traefik.yaml
+      - ./traefik.yaml:/traefik.yaml:ro
       - ./config:/config
+      - ../certs:/etc/certs
 
   phper:
-    image: fet/phper
+    build: ../src/phper
     expose:
       - 80
     labels:
@@ -27,9 +29,10 @@ services:
       - "traefik.http.routers.phper.rule=PathPrefix(`/check`)"
       - "traefik.http.routers.phper.middlewares=removeFirst@file"
       - "traefik.http.services.phper.loadbalancer.passhostheader=true"
+      - "traefik.http.routers.phper.entrypoints=web"
 
   phpar:
-    image: fet/phper
+    build: ../src/phper
     expose:
       - 80
     labels:
@@ -37,6 +40,26 @@ services:
       - "traefik.http.routers.phpar.rule=PathPrefix(`/ekis`)"
       - "traefik.http.routers.phpar.middlewares=removeFirst@file"
       - "traefik.http.services.phpar.loadbalancer.passhostheader=false"
+      - "traefik.http.routers.phpar.entrypoints=web"
+
+  logserver:
+    build: ../src/log-server
+    expose:
+      - 8080
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.logserver.rule=PathPrefix(`/logs`)"
+      - "traefik.http.routers.logserver.middlewares=removeReg@file"
+      - "traefik.http.routers.logserver.entrypoints=web"
+
+  logserver2:
+    build: ../src/log-server
+    expose:
+      - 8080
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.logserver2.rule=Host(`logs.tef.local`)"
+      - "traefik.http.routers.logserver2.entrypoints=web"
 
   registry:
     image: registry:2
@@ -48,3 +71,22 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.regist.rule=PathPrefix(`/registry`)"
       - "traefik.http.routers.regist.middlewares=removeReg@file"
+      - "traefik.http.routers.regist.entrypoints=web"
+
+  rsyncd-s:
+    build: ../src/rsyncd
+    ports:
+      - "877:873"
+    volumes:
+      - /home/deploy/tefagents/docker/logs_staging/tefrunner:/tef/logs
+    labels:
+      - "traefik.enable=true"
+
+  rsyncd-p:
+    build: ../src/rsyncd
+    ports:
+      - "878:873"
+    volumes:
+      - /home/deploy/tefagents/docker/logs_production/tefrunner:/tef/logs
+    labels:
+      - "traefik.enable=true"
