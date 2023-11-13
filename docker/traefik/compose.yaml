@@ -43,7 +43,7 @@ services:
       - "traefik.http.routers.phpar.entrypoints=web"
 
   logserver:
-    build: ../src/log-server
+    build: ../src/logserver
     expose:
       - 8080
     labels:
@@ -53,7 +53,7 @@ services:
       - "traefik.http.routers.logserver.entrypoints=web"
 
   logserver2:
-    build: ../src/log-server
+    build: ../src/logserver
     expose:
       - 8080
     labels:
@@ -78,7 +78,7 @@ services:
     ports:
       - "877:873"
     volumes:
-      - /home/deploy/tefagents/docker/logs_staging/tefrunner:/tef/logs
+      - /tefagents/src/rstaging:/tef/logs
     labels:
       - "traefik.enable=true"
 
@@ -87,6 +87,6 @@ services:
     ports:
       - "878:873"
     volumes:
-      - /home/deploy/tefagents/docker/logs_production/tefrunner:/tef/logs
+      - /tefagents/src/pstaging:/tef/logs
     labels:
       - "traefik.enable=true"
